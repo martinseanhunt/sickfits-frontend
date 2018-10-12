@@ -59,6 +59,28 @@ class CreateItem extends Component {
     })
   }
 
+  // Using cloudinary here - if want to do it on server use https://www.npmjs.com/package/multer
+  uploadFile = async e => {
+    const { files } = e.target 
+    const data = new FormData()
+    data.append('file', files[0])
+    data.append('upload_preset', 'sickfits') // corresponds to preset in cloudinary
+
+    // TODO set image uploading state and don't allow form submit until upload is finished
+
+    const res = await fetch('https://api.cloudinary.com/v1_1/martinseanhunt/image/upload',{
+      method: 'POST',
+      body: data
+    })
+
+    const file = await res.json()
+    console.log(file)
+    this.setState({
+      image: file.secure_url,
+      largeImage: file.eager[0].secure_url
+    })
+  }
+
   render() {
     const { title, description, image, largeImage, price } = this.state
     return (
@@ -96,6 +118,16 @@ class CreateItem extends Component {
                 required
                 onChange={this.onChange}/>
               </label>
+
+              <label htmlFor="file">Image
+              <input 
+                type="file" 
+                placeholder="file" 
+                name="file" 
+                onChange={this.uploadFile}/>
+              {this.state.image && <img src={this.state.image} alt="uploaded image"/>}
+              </label>
+
               
               <button type="submit">Submit</button>
 
