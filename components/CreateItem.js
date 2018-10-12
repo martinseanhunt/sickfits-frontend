@@ -60,6 +60,7 @@ class CreateItem extends Component {
   }
 
   // Using cloudinary here - if want to do it on server use https://www.npmjs.com/package/multer
+  // Not sure if using cloudinary uplaods on the front end is viable in production... How to lock it down?
   uploadFile = async e => {
     const { files } = e.target 
     const data = new FormData()
