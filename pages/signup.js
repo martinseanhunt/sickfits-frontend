@@ -1,10 +1,11 @@
 import Signup from '../components/Signup'
+import Signin from '../components/Signin'
 import styled from 'styled-components'
 
 const SignupPage = props => (
   <Columns>
     <Signup />
-    <Signup />
+    <Signin />
     <Signup />
   </Columns>
 )

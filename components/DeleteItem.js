@@ -20,7 +20,7 @@ class DeleteItem extends Component {
     // Payload is the data that gets sent back from the mutation
 
     // Manually update cahce on client (delete item from cache) so it matches server
-    // OR we could trigger the whole fetch again
+    // OR we could trigger the whole fetch again with refetchQueries like in CreateItem
 
     // Get the page that we want to query 
     const queryVars = { skip: (this.props.page - 1) * perPage }

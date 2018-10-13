@@ -1,11 +1,16 @@
 import React, { Component } from 'react'
-import { Mutation } from 'react-apollo'
+import { Mutation, Query } from 'react-apollo'
 import gql from 'graphql-tag'
 import Router from 'next/router'
 
 import Form from './styles/Form'
 import formatMoney from '../lib/formatMoney'
 import Error from './ErrorMessage'
+
+// These imports are just because I was experimenting with refetchQueries
+import { ALL_ITEMS_QUERY } from './Items'
+import { PAGINATION_QUERY } from './Pagination'
+import { perPage } from '../config'
 
 // The mutation itself can take typed arguments so we can pass in the state
 // CREATE_ITEM_MUTATION(incoming args)
@@ -82,61 +87,93 @@ class CreateItem extends Component {
     })
   }
 
+  refetchQueries = (data, page) => {
+    // Refetch all pages one by one after adding an item - don't do this 
+    // if lots of pages - this was just an excercise 
+    
+    const count = data.itemsConnection.aggregate.count
+    const pages = Math.ceil(count / perPage)
+    
+    // Don't want to do this if there are more than 6 pages or things wll get weird
+    // because it will fire off all the network requests for however many pages there are
+
+    if (pages > 5) return []
+
+    // Seriously... don't do this in production
+    const queries = [...Array(pages)]
+      .map((p, i) => ({
+        query: ALL_ITEMS_QUERY, 
+        variables: { skip: i * perPage } 
+      }))
+    
+    queries.unshift({ query: PAGINATION_QUERY })
+      
+    return queries
+  }
+
   render() {
     const { title, description, image, largeImage, price } = this.state
     return (
-      <Mutation mutation={CREATE_ITEM_MUTATION} variables={this.state}>
-        {(mutationFunction, {loading, error}) => (
-          <Form onSubmit={e => this.onSubmit(e, mutationFunction)}>
-            <h2>Sell an Item</h2>
-            <Error error={error} />
-            <fieldset disabled={loading} aria-busy={loading}>
-              <label htmlFor="title">Title
-              <input 
-                type="text" 
-                placeholder="Title" 
-                name="title" 
-                value={title} 
-                required
-                onChange={this.onChange}/>
-              </label>
+      <Query query={PAGINATION_QUERY}>
+        {({data}) => (
+          <Mutation 
+            mutation={CREATE_ITEM_MUTATION} 
+            variables={this.state}
+            refetchQueries={this.refetchQueries(data)}
+          >
+            {(mutationFunction, {loading, error}) => (
+              <Form onSubmit={e => this.onSubmit(e, mutationFunction)}>
+                <h2>Sell an Item</h2>
+                <Error error={error} />
+                <fieldset disabled={loading} aria-busy={loading}>
+                  <label htmlFor="title">Title
+                  <input 
+                    type="text" 
+                    placeholder="Title" 
+                    name="title" 
+                    value={title} 
+                    required
+                    onChange={this.onChange}/>
+                  </label>
 
-              <label htmlFor="description">Description
-              <textarea 
-                placeholder="Description goes here" 
-                name="description" 
-                value={description} 
-                required
-                onChange={this.onChange}/>
-              </label>
+                  <label htmlFor="description">Description
+                  <textarea 
+                    placeholder="Description goes here" 
+                    name="description" 
+                    value={description} 
+                    required
+                    onChange={this.onChange}/>
+                  </label>
 
-              <label htmlFor="price">Price
-              <input 
-                type="number" 
-                placeholder="Price" 
-                name="price" 
-                value={price} 
-                required
-                onChange={this.onChange}/>
-              </label>
+                  <label htmlFor="price">Price
+                  <input 
+                    type="number" 
+                    placeholder="Price" 
+                    name="price" 
+                    value={price} 
+                    required
+                    onChange={this.onChange}/>
+                  </label>
 
-              <label htmlFor="file">Image
-              <input 
-                type="file" 
-                placeholder="file" 
-                name="file" 
-                onChange={this.uploadFile}/>
-              {this.state.image && <img src={this.state.image} alt="uploaded image"/>}
-              </label>
+                  <label htmlFor="file">Image
+                  <input 
+                    type="file" 
+                    placeholder="file" 
+                    name="file" 
+                    onChange={this.uploadFile}/>
+                  {this.state.image && <img src={this.state.image} alt="uploaded image"/>}
+                  </label>
 
-              
-              <button type="submit">Submit</button>
+                  
+                  <button type="submit">Submit</button>
 
-            </fieldset>
+                </fieldset>
 
-          </Form>
+              </Form>
+            )}
+          </Mutation>
         )}
-      </Mutation>
+      </Query>
     )
   }
 }

@@ -43,6 +43,9 @@ const ALL_ITEMS_QUERY = gql`
 
 // Apparantly this is something that apollo are figuring out how to solva right now. - Wes will update us
 
+// I'm experimenting with #2 in CreateItem.js this wouldn't work on a large scale though - could do the same
+// for DeleteItem
+
 
 class Items extends Component {
   render() {
