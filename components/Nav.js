@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import NavStyles from './styles/NavStyles'
 
-const Nav = () => (
+const Nav = () => 
   <NavStyles>
     <Link href="/"><a>Home</a></Link>
     <Link href="/items"><a>Shop</a></Link>
@@ -11,6 +11,6 @@ const Nav = () => (
     <Link href="/orders"><a>Orders</a></Link>
     <Link href="/me"><a>Account</a></Link>
   </NavStyles>
-)
+
 
 export default Nav
