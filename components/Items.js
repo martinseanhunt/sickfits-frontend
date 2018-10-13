@@ -55,7 +55,7 @@ class Items extends Component {
             if(loading) return <p>Loading...</p>
             if(error) return <p>{error.message}</p>
             return <ItemsList>
-              {data.items.map(i => <Item key={i.id} item={i}/>)}
+              {data.items.map(i => <Item key={i.id} item={i} page={page}/>)}
             </ItemsList>
           }}
         </Query>

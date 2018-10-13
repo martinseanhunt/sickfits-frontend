@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Mutation } from 'react-apollo'
 import gql from 'graphql-tag'
 
+import { perPage } from '../config'
 import { ALL_ITEMS_QUERY } from './Items'
 
 const DELTE_ITEM_MUTATION = gql`
@@ -21,14 +22,17 @@ class DeleteItem extends Component {
     // Manually update cahce on client (delete item from cache) so it matches server
     // OR we could trigger the whole fetch again
 
+    // Get the page that we want to query 
+    const queryVars = { skip: (this.props.page - 1) * perPage }
+
     // read cache for items we want - we query it with graphql
-    const data = cache.readQuery({ query: ALL_ITEMS_QUERY })
+    const data = cache.readQuery({ query: ALL_ITEMS_QUERY, variables: queryVars })
 
     // Filter the deleted item out of the returned data
     data.items = data.items.filter(i => i.id !== payload.data.deleteItem.id)
 
     // Put the items back
-    cache.writeQuery({ query: ALL_ITEMS_QUERY, data: data })
+    cache.writeQuery({ query: ALL_ITEMS_QUERY, data: data, variables: queryVars })
   }
   
   render() {

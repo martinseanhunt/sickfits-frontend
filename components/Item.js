@@ -14,7 +14,7 @@ class Item extends Component {
   }
 
   render() {
-    const { item } = this.props
+    const { item, page } = this.props
     return (
       <ItemStyles>
         {item.image && <img src={item.image} alt={item.title} />}
@@ -32,7 +32,7 @@ class Item extends Component {
             query: { id: item.id }
            }}><a>Edit</a></Link>
           <button>Add To Card</button>
-          <DeleteItem id={item.id}>Delete Item</DeleteItem>
+          <DeleteItem id={item.id} page={page}>Delete Item</DeleteItem>
         </div>
       </ItemStyles>
     )
