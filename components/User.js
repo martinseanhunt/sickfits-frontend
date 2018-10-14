@@ -3,10 +3,8 @@ import gql from 'graphql-tag'
 
 import propTypes from 'prop-types'
 
-// Must learn how We can stop requests like this being fulfilled! 
-// WE should never be able to return the password in any instance
-// and never return anything other than name if we're querying someone
-// elses user
+// We're stopping the password and other sensitive data coming through on the back end
+// in schema.graphql
 
 const CURRENT_USER_QUERY = gql`
   query CURRENT_USER_QUERY {
@@ -15,7 +13,6 @@ const CURRENT_USER_QUERY = gql`
       email
       id
       permissions
-      password
     }
   }
 `

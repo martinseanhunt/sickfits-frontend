@@ -5,7 +5,6 @@ import withData from '../lib/withData'
 import Page from '../components/Page'
 
 class MyApp extends App {  
-  
   static async getInitialProps({ Component, ctx }) {
     // Makes sure that all queries to back end are resoved before rendering page
     // This is because of server side rendering
