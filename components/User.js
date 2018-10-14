@@ -6,6 +6,12 @@ import propTypes from 'prop-types'
 // We're stopping the password and other sensitive data coming through on the back end
 // in schema.graphql
 
+// Example of a query that fetches data from multiple tables, multiple levels deep
+
+// some stuff is uneccesarry for our app, just proving a point
+// we're grabbing the user who created the item that's in our card, and their own cart details
+// relationships are powerful! this is a lot of calls to DB though in 1 query. could cause performance issues
+
 const CURRENT_USER_QUERY = gql`
   query CURRENT_USER_QUERY {
     me {
@@ -13,6 +19,26 @@ const CURRENT_USER_QUERY = gql`
       email
       id
       permissions
+      cart {
+        id
+        quantity
+        item {
+          id
+          title
+          price
+          image
+          description
+          user {
+            name
+            cart {
+              item{
+                title 
+                price
+              }
+            }
+          }
+        }
+      }
     }
   }
 `

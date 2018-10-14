@@ -42,15 +42,13 @@ class DeleteItem extends Component {
         variables={{ id: this.props.id }}
         update={this.update}>
         {(deleteItem, { data, error, loading }) => {
-          
-          if(loading) return <p>Loading...</p>
-          if(error) return <p>{error.message}</p>
-
           return (
             <button onClick={() =>{
               if(confirm('Are you ure you want to delete this?'))
-                deleteItem()}
-            }>{this.props.children}</button>
+                // One way of catching errors from the back end
+                deleteItem().catch(e => alert(e.message))
+            }
+            }>{ loading ? 'Loading...' : this.props.children}</button>
           )
         }}
       </Mutation>

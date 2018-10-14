@@ -4,6 +4,7 @@ import Router from 'next/router'
 import NProgress from 'nprogress'
 
 import Nav from './Nav'
+import Cart from './Cart'
 
 // Loading bar
 Router.onRouteChangeStart = () => NProgress.start()
@@ -11,16 +12,19 @@ Router.onRouteChangeComplete = () => NProgress.done()
 Router.onRouteChangeError = () => NProgress.done()
 
 const Header = () => (
-  <StyledHeader>
-    <div className="bar">
-      <Logo><Link href="/"><a>Sick Fits</a></Link></Logo>
-      <Nav />
-    </div>
-    <div className="sub-bar">
-      <p>Search</p>
-    </div>
-    <div>Cart</div>
-  </StyledHeader>
+  <HeaderHeight>
+    <StyledHeader>
+      <Cart/>
+      <div className="bar">
+        <Logo><Link href="/"><a>Sick Fits</a></Link></Logo>
+        <Nav />
+      </div>
+      <div className="sub-bar">
+        <p>Search</p>
+      </div>
+      <div>Cart</div>
+    </StyledHeader>
+  </HeaderHeight>
 )
 
 const Logo = styled.h1`
@@ -43,7 +47,15 @@ const Logo = styled.h1`
   }
 `
 
+const HeaderHeight = styled.div`
+  height: 300px;
+`
+
 const StyledHeader = styled.header`
+  position: fixed;
+  width: 100%;
+  z-index: 999;
+  background: white;
   .bar {
     border-bottom: 10px solid ${({theme}) => theme.black};
     display: grid;
