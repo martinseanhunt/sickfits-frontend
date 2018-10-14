@@ -91,7 +91,7 @@ class CreateItem extends Component {
     // Refetch all pages one by one after adding an item - don't do this 
     // if lots of pages - this was just an excercise 
     
-    const count = data.itemsConnection.aggregate.count
+    const count = data.itemsConnection.aggregate.count || 1
     const pages = Math.ceil(count / perPage)
     
     // Don't want to do this if there are more than 6 pages or things wll get weird

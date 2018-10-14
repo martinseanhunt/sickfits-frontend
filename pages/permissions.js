@@ -1,14 +1,14 @@
 // NExtJS imports react for us... Why / How ?
 
 import Link from 'next/link'
+import Permissions from '../components/Permissions'
 
 import PleaseSignIn from '../components/PleaseSignIn'
-import CreateItem from '../components/CreateItem'
 
-const Sell = props => (
+const PermissionsPage = props => (
   <PleaseSignIn>
-    <CreateItem page={parseFloat(props.query.page) || 1}/>
+    <Permissions />
   </PleaseSignIn>
 )
 
-export default Sell
+export default PermissionsPage
