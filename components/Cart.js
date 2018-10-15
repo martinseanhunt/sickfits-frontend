@@ -2,6 +2,12 @@ import React, { Component } from 'react'
 import { Query, Mutation } from 'react-apollo'
 import gql from 'graphql-tag'
 
+// REact adopt takes all of our different render prop components
+// queries / mutations etc and gives us a single composed component that
+// exposes everythung we need
+import { adopt } from 'react-adopt'
+
+
 import CartStyles from './styles/CartStyles'
 import Supreme from './styles/Supreme'
 import CloseButton from './styles/CloseButton'
@@ -29,42 +35,58 @@ const TOGGLE_CART_MUTATION = gql`
  }
 `
 
+// All the different render prop components we want to compose together
+// avoids deeply nested mutations, queries and custom prop componets like
+// User
+
+/* if we weren't using proptypes we could just do it like this but 
+    proptypes has a fit if we do it this way. Below does the same thing 
+    and fixes the proprtye errors,it's just way more verbose 
+
+    const Composed = adopt({
+      user: <User />,
+      toggleCart: <Mutation mutation={TOGGLE_CART_MUTATION} />,
+      localState: <Query query={LOCAL_STATE_QUERY} />
+    })
+*/
+
+const Composed = adopt({
+  user: ({ render }) => <User >{render}</User>,
+  toggleCart: ({ render }) => <Mutation mutation={TOGGLE_CART_MUTATION}>{render}</Mutation>,
+  localState: ({ render }) => <Query query={LOCAL_STATE_QUERY}>{render}</Query>
+})
+
 class Cart extends Component {
   render() {
     return ( 
-      <User> 
-        {({data: { me }}) => {
+      <Composed>
+        {/* gives us a single object with all the values from each original renderprop component */} 
+        {({user, toggleCart, localState}) => {
+          const me = user.data.me
           if(!me) return null
+
           return (
-            <Mutation mutation={TOGGLE_CART_MUTATION}>
-              {(toggleCart) => (
-                <Query query={LOCAL_STATE_QUERY}>
-                  {({ data }) => (
-                    <CartStyles open={data.cartOpen}>
-                      <header>
-                        <CloseButton 
-                          title='close'
-                          onClick={toggleCart}>
-                          &times;
-                        </CloseButton>
-                        <Supreme>{me.name}'s' Cart</Supreme>
-                        <p>You have {me.cart.length} item{me.cart.length !== 1 && 's' } in your cart</p>
-                      </header>
-                      <ul>
-                        {me.cart.map(cartItem => <CartItem key={cartItem.id} cartItem={cartItem}/>)}
-                      </ul>
-                      <footer>
-                        <p>{formatMoney(CalcTotalPrice(me.cart))}</p>
-                        <SickButton>Checkout</SickButton>
-                      </footer>
-                    </CartStyles>
-                    )}
-                </Query>  
-              )}
-            </Mutation>
+            <CartStyles open={localState.data.cartOpen}>
+              <header>
+                <CloseButton 
+                  title='close'
+                  onClick={toggleCart}>
+                  &times;
+                </CloseButton>
+                <Supreme>{me.name}'s' Cart</Supreme>
+                <p>You have {me.cart.length} item{me.cart.length !== 1 && 's' } in your cart</p>
+              </header>
+              <ul>
+                {me.cart.map(cartItem => <CartItem key={cartItem.id} cartItem={cartItem}/>)}
+              </ul>
+              <footer>
+                <p>{formatMoney(CalcTotalPrice(me.cart))}</p>
+                <SickButton>Checkout</SickButton>
+              </footer>
+            </CartStyles>     
           )
         }}
-        </User>
+      </Composed>
     )
   }
 }
