@@ -42,6 +42,9 @@ class CartItem extends Component {
     if (!cartItem.item) return <CartItemStyles>
       {/* REFACTOR once the delete button is in its own component 
           import it here too so the message can be dismissed
+          could also be good to trigger a mutation in this case to delete
+          the item from cart automagically - or deleting an item needs to run a mutation
+          to delete from everyones cart and instead leave them with a message
       */}
       <p>This item is no longer available and has been removed from your cart</p>
     </CartItemStyles>

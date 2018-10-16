@@ -16,6 +16,7 @@ import User from './User'
 import CartItem from './CartItem'
 import CalcTotalPrice from '../lib/calcTotalPrice'
 import formatMoney from '../lib/formatMoney'
+import TakeMyMoney from './TakeMyMoney'
 
 // Going to query loxal app state with this that is set up in 
 // withData.js 
@@ -80,8 +81,13 @@ class Cart extends Component {
                 {me.cart.map(cartItem => <CartItem key={cartItem.id} cartItem={cartItem}/>)}
               </ul>
               <footer>
+              {/* BUG: includes deleted items in price */}
                 <p>{formatMoney(CalcTotalPrice(me.cart))}</p>
-                <SickButton>Checkout</SickButton>
+                {me.cart.length > 0 &&
+                  <TakeMyMoney>
+                    <SickButton>Checkout</SickButton>
+                  </TakeMyMoney>
+                }
               </footer>
             </CartStyles>     
           )
