@@ -24,14 +24,22 @@ class TakeMyMoney extends Component {
   // BUG: Cart quantity is counted if the item has been deleted
   totalItems = (cart) => cart.reduce((tally, cartItem) => tally + cartItem.quantity, 0)
   
-  onToken = (res, createOrder) => {
+  onToken = async (res, createOrder) => {
+    NProgress.start()
     // manually calling mutation up here with stripe token as variable
-    createOrder({
+    const order = await createOrder({
       variables: {
         token: res.id
       }
     }).catch(err => {
       alert(err.message)
+    })
+
+    console.log(order)
+
+    Router.push({
+      pathname: '/order',
+      query: { id: order.data.createOrder.id }
     })
   }
   
