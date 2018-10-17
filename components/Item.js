@@ -18,7 +18,7 @@ class Item extends Component {
     const { item, page } = this.props
     return (
       <ItemStyles>
-        {item.image && <img src={item.image} alt={item.title} />}
+        <img src={item.image || 'https://res.cloudinary.com/martinseanhunt/image/upload/v1539808747/sickfits/kcmpxrm14bizwqxl8ihv.jpg'} alt={item.title} />
         <Title>
           <Link href={{ 
             pathname: '/item',

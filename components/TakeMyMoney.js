@@ -58,7 +58,7 @@ class TakeMyMoney extends Component {
                   amount={calcTotalPrice(me.cart)}
                   name="Sick Fits"
                   description={`Order of ${this.totalItems(me.cart)} items`}
-                  image={me.cart[0] && me.cart[0].item.image}
+                  image={me && me.cart[0] && me.cart[0].item && me.cart[0].image}
                   stripeKey="pk_test_VZxFTmFf4SJGOtEcAE5KbY6x" // REFACTOR move to env variable
                   currency="USD"
                   email={me.email}

@@ -4,10 +4,10 @@ import Link from 'next/link'
 
 import Items from '../components/Items'
 
-const Index = props => { console.log(props); return (
+const Index = props => (
   <div>
     <Items page={parseFloat(props.query.page) || 1} client={props.client}/>
   </div>
-)}
+)
 
 export default Index

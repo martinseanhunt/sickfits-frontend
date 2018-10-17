@@ -60,18 +60,26 @@ class Items extends Component {
     pageSet: null
   }
 
+  // COmponent did update doesn't run on the first mount but we want it to!
   componentDidMount = () => this.componentDidUpdate()
 
   componentDidUpdate = async () => {
     const { page, client } = this.props
     const { items, pageSet } = this.state
 
+    if(!client) return
+
     try {
       const res = client.readQuery({
         query: gql`
           query CACHED_ITEMS{
             items(skip: $skip) @connection(key: "ItemPages", filter: ["skip"]) {
-              id  
+              id
+              title
+              description
+              price
+              image
+              largeImage  
             }
           }
         `,
@@ -83,7 +91,6 @@ class Items extends Component {
       // If there are already items in the cache, cool! Add them to state to be rendered below
       // unless the items have already been set for this page becausew we'll get stuck in a loop
       const alreadySetForPage = page === pageSet
-      console.log(alreadySetForPage)
       if(res.items.length && !alreadySetForPage) {
         console.log('items already in cache')
 
@@ -95,17 +102,36 @@ class Items extends Component {
         })
       } 
       
-      /*{
-        // Otherwise it means we've cleared out the items for this page to an empty array so we need to refetch :D
-        console.log('items need refetching')
-      }*/
+      // if we have a result from the local cache query... and it's an empty array
+      // it means we've cleared the array for the page to indicate we want to refetch it
+      // when it's asked for
+      if(res.items.length === 0 &&!alreadySetForPage) {
+        console.log('refetching page' + page)
+        const newItems = await client.query({ 
+          query: ALL_ITEMS_QUERY,
+          variables: { skip: ((page - 1) * perPage) },
+          fetchPolicy: 'network-only'
+        }).catch(error => {
+          console.log('error')
+          this.setState({ 
+            loading: false,
+            error: error
+           })
+        })
+        
+        this.setState({
+          loading: false,
+          items: newItems.data.items,
+          pageSet: page
+        })
 
+      }
        
     } catch(e) {
       // If we're here it means there's no queryt for this page in the cache
       // So we need to fetch the items (for the first time)
 
-      console.log('making first fetch')
+      console.log('making first fetch for page' + page)
 
       const items = await client.query({ 
         query: ALL_ITEMS_QUERY,

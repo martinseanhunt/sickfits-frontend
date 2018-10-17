@@ -145,7 +145,8 @@ class CreateItem extends Component {
           }
         })
       })
-      
+    
+    console.log('setting all paginated pages to be refetched only when neeeded')
   }
 
   render() {
@@ -157,7 +158,7 @@ class CreateItem extends Component {
             mutation={CREATE_ITEM_MUTATION} 
             variables={this.state}
             // Try removing all items from cache instead ?
-            // refetchQueries={this.refetchQueries(data)}
+            refetchQueries={[{ query: PAGINATION_QUERY }]}
             // Passing data from PAGINATION_QUERY to an update function
             
             // not currently working becuase setting the state to an 
