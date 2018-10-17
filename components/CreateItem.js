@@ -111,6 +111,43 @@ class CreateItem extends Component {
     return queries
   }
 
+  // This fires once the mutation is complete
+  update = (cache, payload, data) => {
+    // Tryin to delete items in cache on each page  
+    // so that they will be forced to refetch only when needed
+    // rather than using refetchQueries
+
+    // Work out number of pages based on the aggregate count
+    const count = data.itemsConnection.aggregate.count || 1
+    const pages = Math.ceil(count / perPage)
+
+    // Create the relevant query for all pages of data and then delete the
+    // items in these parts of the cache forcing a refetch of the item
+    // data when you next go to home or sell :) 
+
+    // this doesn't work as it just clears all the itmes rather than the queries themselves
+    // so you're left with an empty page
+    const queryResults = [...Array(pages)]
+      .map((page, index) => {
+        cache.writeQuery({
+          query: gql`
+            query CACHED_ITEMS{
+              items(skip: $skip) @connection(key: "ItemPages", filter: ["skip"]) {
+                id  
+              }
+            }
+          `,
+          variables: {
+            skip: index * perPage,
+          },
+          data: {
+            items: []
+          }
+        })
+      })
+      
+  }
+
   render() {
     const { title, description, image, largeImage, price } = this.state
     return (
@@ -119,7 +156,15 @@ class CreateItem extends Component {
           <Mutation 
             mutation={CREATE_ITEM_MUTATION} 
             variables={this.state}
-            refetchQueries={this.refetchQueries(data)}
+            // Try removing all items from cache instead ?
+            // refetchQueries={this.refetchQueries(data)}
+            // Passing data from PAGINATION_QUERY to an update function
+            
+            // not currently working becuase setting the state to an 
+            // empty array just dletes all items from page.... How to remove 
+            // query entirely? 
+            
+            update={(cache, payload) => this.update(cache, payload, data)}
           >
             {(mutationFunction, {loading, error}) => (
               <Form onSubmit={e => this.onSubmit(e, mutationFunction)}>
