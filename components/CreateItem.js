@@ -87,56 +87,24 @@ class CreateItem extends Component {
     })
   }
 
-  refetchQueries = (data, page) => {
-    // Refetch all pages one by one after adding an item - don't do this 
-    // if lots of pages - this was just an excercise 
-    
-    const count = data.itemsConnection.aggregate.count || 1
-    const pages = Math.ceil(count / perPage)
-    
-    // Don't want to do this if there are more than 6 pages or things wll get weird
-    // because it will fire off all the network requests for however many pages there are
-
-    if (pages > 5) return []
-
-    // Seriously... don't do this in production
-    const queries = [...Array(pages)]
-      .map((p, i) => ({
-        query: ALL_ITEMS_QUERY, 
-        variables: { skip: i * perPage } 
-      }))
-    
-    queries.unshift({ query: PAGINATION_QUERY })
-      
-    return queries
-  }
-
   // This fires once the mutation is complete
   update = (cache, payload, data) => {
-    // Tryin to delete items in cache on each page  
-    // so that they will be forced to refetch only when needed
-    // rather than using refetchQueries
+    // We're going to find every paginated query of items in our apollo cache and set them
+    // to an empty array so hat we know they need to be refetched
 
     // Work out number of pages based on the aggregate count
+    // pulling the count from pagination query
     const count = data.itemsConnection.aggregate.count || 1
     const pages = Math.ceil(count / perPage)
 
     // Create the relevant query for all pages of data and then delete the
-    // items in these parts of the cache forcing a refetch of the item
-    // data when you next go to home or sell :) 
+    // items in these parts of the cache so items.js knows to refecth each 
+    // page when it is requested
 
-    // this doesn't work as it just clears all the itmes rather than the queries themselves
-    // so you're left with an empty page
     const queryResults = [...Array(pages)]
       .map((page, index) => {
         cache.writeQuery({
-          query: gql`
-            query CACHED_ITEMS{
-              items(skip: $skip) @connection(key: "ItemPages", filter: ["skip"]) {
-                id  
-              }
-            }
-          `,
+          query: ALL_ITEMS_QUERY,
           variables: {
             skip: index * perPage,
           },
