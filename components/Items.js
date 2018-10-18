@@ -33,7 +33,6 @@ class Items extends Component {
 
   componentDidUpdate = async () => {
 
-    // TODO get clientand possibly page from context api
     const { page, client } = this.props
     const { items, pageSet, error } = this.state
 
