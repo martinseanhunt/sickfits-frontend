@@ -100,7 +100,8 @@ class CreateItem extends Component {
     // https://www.apollographql.com/docs/react/essentials/local-state.html#direct-writes
     cache.writeData({
       data: {
-        itemPagesToRefetch: pagesArray
+        itemPagesToRefetch: pagesArray,
+        itemPageFetched: null
       }
     })
     

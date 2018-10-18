@@ -30,21 +30,27 @@ class Items extends Component {
   state = { 
     items: [],
     loading: true,
-    error: null,
-    pageSet: null
+    error: null
   }
 
   // Component did update doesn't run on the first mount but we want it to!
   componentDidMount = () => this.componentDidUpdate()
 
   componentDidUpdate = async () => {
-    const { page, client } = this.props
-    const { pageSet, error } = this.state
+    const { page, client, itemPageFetched } = this.props
+    const { error } = this.state
+
 
     // have we already found, or failed to find, the items in either the cache
     // or the server for this page? if so, don't get stuck in a loop or create
     // unnececarry calls to the cache
-    const alreadySetForPage = page === pageSet
+
+    // check if the query has already been found for this page (either from server or from chace) 
+    // so we don't get stuck in a loop after grabbing the items
+    // Needs to be in apollo cache so that it can be reset by deleteItem to
+    // trigger a refetch of the current page.. This is being passed down from items.js
+    // so that updating it causes a re render
+    const alreadySetForPage = page === itemPageFetched
     if(alreadySetForPage || !client || error) return
 
     // Set the state to loading if we haven't already
@@ -69,9 +75,11 @@ class Items extends Component {
       this.fetchItems('network-only')
       
       // Remove current page from array of pages to be refetched in cache
+      // and set the page fetched to the currnet page
       client.writeData({
         data: {
-          itemPagesToRefetch: pagesToRefetch.filter(p => p !== page)
+          itemPagesToRefetch: pagesToRefetch.filter(p => p !== page),
+          itemPageFetched: page
         }
       })
 
@@ -82,6 +90,12 @@ class Items extends Component {
     // from network - only if the page hasn't been loaded before!
     console.log('either first fetch or fetching from cache for page ' + page)
     this.fetchItems()
+    // set the page fetched to the currnet page
+      client.writeData({
+        data: {
+          itemPageFetched: page
+        }
+      })
   }
 
   fetchItems = async (fetchPolichy) => {
@@ -97,7 +111,6 @@ class Items extends Component {
       return this.setState({
         loading: false,
         items: newItems.data.items,
-        pageSet: page
       })
     } catch (errr) {
       console.log('error')
