@@ -8,7 +8,6 @@ import formatMoney from '../lib/formatMoney'
 import Error from './ErrorMessage'
 
 // These imports are just because I was experimenting with refetchQueries
-import { ALL_ITEMS_QUERY } from './Items'
 import { PAGINATION_QUERY } from './Pagination'
 import { perPage } from '../config'
 
@@ -87,32 +86,23 @@ class CreateItem extends Component {
     })
   }
 
-  // This fires once the mutation is complete
-  update = (cache, payload, paginationData) => {
-    // We're going to find every paginated query of items in our apollo cache and set them
-    // to an empty array so hat we know they need to be refetched
-
+  update = async (cache, payload, paginationData) => {
     // Work out number of pages based on the aggregate count
     // pulling the count from pagination query
     const count = paginationData.itemsConnection.aggregate.count || 1
     const pages = Math.ceil(count / perPage)
 
-    // Create the relevant query for all pages of data and then delete the
-    // items in these parts of the cache so items.js knows to refecth each 
-    // page when it is requested
+    // Save an array containing the page numbers that need to be refetched
+    // to our local apollo cache
+    const pagesArray = [...Array(pages)].map((page, i) => i + 1) 
 
-    const queryResults = [...Array(pages)]
-      .map((page, index) => {
-        cache.writeQuery({
-          query: ALL_ITEMS_QUERY,
-          variables: {
-            skip: index * perPage,
-          },
-          data: {
-            items: []
-          }
-        })
-      })
+    // No need to use a complex mutation for such simple data, just write direct to cache
+    // https://www.apollographql.com/docs/react/essentials/local-state.html#direct-writes
+    cache.writeData({
+      data: {
+        itemPagesToRefetch: pagesArray
+      }
+    })
     
     console.log('setting all paginated pages to be refetched only when neeeded')
   }
@@ -120,69 +110,71 @@ class CreateItem extends Component {
   render() {
     const { title, description, image, largeImage, price } = this.state
     return (
-      <Query query={PAGINATION_QUERY}>
-        {({data}) => (
-          <Mutation 
-            mutation={CREATE_ITEM_MUTATION} 
-            variables={this.state}
-            // refetch the pagination data so our itemcount is up to date
-            refetchQueries={[{ query: PAGINATION_QUERY }]}
-            // update our cached queries
-            update={(cache, payload) => this.update(cache, payload, data)}
-          >
-            {(mutationFunction, {loading, error}) => (
-              <Form onSubmit={e => this.onSubmit(e, mutationFunction)}>
-                <h2>Sell an Item</h2>
-                <Error error={error} />
-                <fieldset disabled={loading} aria-busy={loading}>
-                  <label htmlFor="title">Title
-                  <input 
-                    type="text" 
-                    placeholder="Title" 
-                    name="title" 
-                    value={title} 
-                    required
-                    onChange={this.onChange}/>
-                  </label>
 
-                  <label htmlFor="description">Description
-                  <textarea 
-                    placeholder="Description goes here" 
-                    name="description" 
-                    value={description} 
-                    required
-                    onChange={this.onChange}/>
-                  </label>
+          <Query query={PAGINATION_QUERY}>
+            {({data}) => (
+              <Mutation 
+                mutation={CREATE_ITEM_MUTATION} 
+                variables={this.state}
+                // refetch the pagination data so our itemcount is up to date
+                refetchQueries={[{ query: PAGINATION_QUERY }]}
+                // update our cached queries
+                update={(cache, payload) => this.update(cache, payload, data)}
+              >
+                {(mutationFunction, {loading, error}) => (
+                  <Form onSubmit={e => this.onSubmit(e, mutationFunction)}>
+                    <h2>Sell an Item</h2>
+                    <Error error={error} />
+                    <fieldset disabled={loading} aria-busy={loading}>
+                      <label htmlFor="title">Title
+                      <input 
+                        type="text" 
+                        placeholder="Title" 
+                        name="title" 
+                        value={title} 
+                        required
+                        onChange={this.onChange}/>
+                      </label>
 
-                  <label htmlFor="price">Price
-                  <input 
-                    type="number" 
-                    placeholder="Price" 
-                    name="price" 
-                    value={price} 
-                    required
-                    onChange={this.onChange}/>
-                  </label>
+                      <label htmlFor="description">Description
+                      <textarea 
+                        placeholder="Description goes here" 
+                        name="description" 
+                        value={description} 
+                        required
+                        onChange={this.onChange}/>
+                      </label>
 
-                  <label htmlFor="file">Image
-                  <input 
-                    type="file" 
-                    placeholder="file" 
-                    name="file" 
-                    onChange={this.uploadFile}/>
-                  {this.state.image && <img src={this.state.image} alt="uploaded image"/>}
-                  </label>
+                      <label htmlFor="price">Price
+                      <input 
+                        type="number" 
+                        placeholder="Price" 
+                        name="price" 
+                        value={price} 
+                        required
+                        onChange={this.onChange}/>
+                      </label>
 
-                  
-                  <button type="submit">Submit</button>
+                      <label htmlFor="file">Image
+                      <input 
+                        type="file" 
+                        placeholder="file" 
+                        name="file" 
+                        onChange={this.uploadFile}/>
+                      {this.state.image && <img src={this.state.image} alt="uploaded image"/>}
+                      </label>
 
-                </fieldset>
+                      
+                      <button type="submit">Submit</button>
 
-              </Form>
+                    </fieldset>
+
+                  </Form>
+                )}
+              </Mutation>
             )}
-          </Mutation>
-        )}
-      </Query>
+          </Query>
+
     )
   }
 }
