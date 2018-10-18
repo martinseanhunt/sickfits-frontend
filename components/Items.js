@@ -47,6 +47,9 @@ class Items extends Component {
     const alreadySetForPage = page === pageSet
     if(alreadySetForPage || !client || error) return
 
+    // Set the state to loading if we haven't already
+    if(!this.state.loading) return this.setState({ loading: true })
+
     // get list of pages that need to be refetched from our apollo cache
     const res =  await client.readQuery({
       query: GET_ITEM_PAGES_TO_REFETCH
@@ -71,6 +74,8 @@ class Items extends Component {
           itemPagesToRefetch: pagesToRefetch.filter(p => p !== page)
         }
       })
+
+      return
     }
 
     // Otherwise, create a regular query that will either grab from cache or 
