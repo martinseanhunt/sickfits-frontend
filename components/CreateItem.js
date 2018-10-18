@@ -88,13 +88,13 @@ class CreateItem extends Component {
   }
 
   // This fires once the mutation is complete
-  update = (cache, payload, data) => {
+  update = (cache, payload, paginationData) => {
     // We're going to find every paginated query of items in our apollo cache and set them
     // to an empty array so hat we know they need to be refetched
 
     // Work out number of pages based on the aggregate count
     // pulling the count from pagination query
-    const count = data.itemsConnection.aggregate.count || 1
+    const count = paginationData.itemsConnection.aggregate.count || 1
     const pages = Math.ceil(count / perPage)
 
     // Create the relevant query for all pages of data and then delete the
@@ -125,14 +125,9 @@ class CreateItem extends Component {
           <Mutation 
             mutation={CREATE_ITEM_MUTATION} 
             variables={this.state}
-            // Try removing all items from cache instead ?
+            // refetch the pagination data so our itemcount is up to date
             refetchQueries={[{ query: PAGINATION_QUERY }]}
-            // Passing data from PAGINATION_QUERY to an update function
-            
-            // not currently working becuase setting the state to an 
-            // empty array just dletes all items from page.... How to remove 
-            // query entirely? 
-            
+            // update our cached queries
             update={(cache, payload) => this.update(cache, payload, data)}
           >
             {(mutationFunction, {loading, error}) => (
